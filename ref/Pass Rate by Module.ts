@@ -1,19 +1,11 @@
-const tokens = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split(/\s+/);
+import * as fs from 'fs';
 
-const stats = new Map(); // module -> {pass, total}
-
-for (const entry of tokens) {
-  const parts = entry.split('|');
-  if (parts.length < 2) continue;
-  const module = parts[0];
-  const status = parts[1];
-  if (!stats.has(module)) stats.set(module, { pass: 0, total: 0 });
-  const s = stats.get(module);
-  s.total += 1;
-  if (status === 'PASS') s.pass += 1;
+interface ModuleStats {
+  pass: number;
+  total: number;
 }
 
-function roundHalfUp2(pass, total) {
+function roundHalfUp2(pass: number, total: number): string {
   const numerator = pass * 10000; // percentage * 100, scaled
   let quotient = Math.floor(numerator / total);
   const remainder = numerator % total;
@@ -23,11 +15,28 @@ function roundHalfUp2(pass, total) {
   return `${intPart}.${String(decPart).padStart(2, '0')}`;
 }
 
-const modules = [...stats.keys()].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+function main(): void {
+  const tokens: string[] = fs.readFileSync('/dev/stdin', 'utf8').trim().split(/\s+/);
 
-const lines = modules.map(m => {
-  const { pass, total } = stats.get(m);
-  return `${m} ${roundHalfUp2(pass, total)}`;
-});
+  const stats = new Map<string, ModuleStats>();
 
-console.log(lines.join(' '));
+  for (const entry of tokens) {
+    const parts = entry.split('|');
+    if (parts.length < 2) continue;
+    const module = parts[0];
+    const status = parts[1];
+    if (!stats.has(module)) stats.set(module, { pass: 0, total: 0 });
+    const s = stats.get(module)!;
+    s.total += 1;
+    if (status === 'PASS') s.pass += 1;
+  }
+
+  const modules: string[] = [...stats.keys()].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+
+  for (const m of modules) {
+    const { pass, total } = stats.get(m)!;
+    console.log(`${m} ${roundHalfUp2(pass, total)}`);
+  }
+}
+
+main();
