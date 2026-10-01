@@ -1,18 +1,18 @@
-const fs = require("fs");
+import * as fs from "fs";
 
-const tokens = fs.readFileSync(0, "utf8").trim().split(/\s+/).map(Number);
+const tokens: number[] = fs.readFileSync(0, "utf8").trim().split(/\s+/).map(Number);
 
-const n = tokens[0];
-const nums = tokens.slice(1, 1 + n);
-const target = tokens[tokens.length - 1];
+const n: number = tokens[0];
+const nums: number[] = tokens.slice(1, 1 + n);
+const target: number = tokens[tokens.length - 1];
 
-const seen = new Map(); // value -> index
+const seen = new Map<number, number>(); // value -> index
 
-let result = [];
+let result: number[] = [];
 for (let i = 0; i < nums.length; i++) {
-  const complement = target - nums[i];
+  const complement: number = target - nums[i];
   if (seen.has(complement)) {
-    result = [seen.get(complement), i];
+    result = [seen.get(complement) as number, i];
     break;
   }
   seen.set(nums[i], i);
